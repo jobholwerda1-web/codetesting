@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="shared.css">
 </head>
 <body>
+  <!-- Header -->
   <header class="site-header">
     <div class="header-icon">
       <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
@@ -22,6 +23,8 @@
       <span class="header-subtitle">Beheer van overeenkomsten, risico's en naleving</span>
     </div>
   </header>
+
+  <!-- Nav -->
   <nav class="site-nav">
     <a href="overeenkomsten.html" class="active">Overeenkomsten</a>
     <a href="risicomatrix.html">Risicomatrix</a>
@@ -30,39 +33,47 @@
   </nav>
 
   <div class="main-container">
-    <!-- Form Card -->
+
+    <!-- Form card -->
     <div class="card">
       <div class="card-title">Overeenkomst toevoegen / bewerken</div>
       <div class="form-row">
-        <div class="form-group" style="flex:2 1 300px;">
+        <div class="form-group" style="flex: 2 1 300px;">
           <label for="inp-omschrijving">Omschrijving <span style="color:#b04040">*</span></label>
-          <input type="text" id="inp-omschrijving" maxlength="200" placeholder="Omschrijving van de overeenkomst" autocomplete="off">
+          <input type="text" id="inp-omschrijving" maxlength="200"
+                 placeholder="Omschrijving van de overeenkomst" autocomplete="off">
         </div>
-        <div class="form-group" style="flex:1 1 150px;">
+        <div class="form-group" style="flex: 1 1 150px;">
           <label for="inp-startdatum">Startdatum <span style="color:#b04040">*</span></label>
           <input type="date" id="inp-startdatum">
         </div>
-        <div class="form-group" style="flex:1 1 150px;">
+        <div class="form-group" style="flex: 1 1 150px;">
           <label for="inp-einddatum">Einddatum <span style="color:#b04040">*</span></label>
           <input type="date" id="inp-einddatum">
         </div>
       </div>
       <div id="msg-form" class="hidden"></div>
-      <div id="msg-edit" class="msg-info hidden">Bewerkingsmodus — aanpassingen worden opgeslagen bij klikken op "Opslaan".</div>
+      <div id="msg-edit" class="msg-info hidden">
+        Bewerkingsmodus — pas de velden aan en klik op <strong>Opslaan</strong> om de wijziging te bevestigen.
+      </div>
       <div class="btn-row">
         <button class="btn btn-primary" id="btn-save" onclick="saveRecord()">Opslaan</button>
         <button class="btn btn-secondary hidden" id="btn-cancel" onclick="cancelEdit()">Annuleren</button>
       </div>
     </div>
 
-    <!-- Table Card -->
+    <!-- Table card -->
     <div class="card">
       <div class="card-title">Overzicht overeenkomsten</div>
       <div class="toolbar">
         <label for="filter-omschrijving">Zoeken:</label>
-        <input type="text" id="filter-omschrijving" placeholder="Zoeken op omschrijving…" style="min-width:200px;" oninput="renderTable()">
+        <input type="text" id="filter-omschrijving"
+               placeholder="Zoeken op omschrijving…"
+               style="min-width:220px;"
+               oninput="renderTable()">
         <span class="record-count" id="record-count">Weergegeven: 0 / 0</span>
       </div>
+
       <div class="table-wrapper">
         <table id="main-table">
           <thead>
@@ -70,18 +81,19 @@
               <th class="sortable" data-col="omschrijving" onclick="toggleSort('omschrijving')">
                 Omschrijving <em class="sort-icon" id="si-omschrijving">↕</em>
               </th>
-              <th class="sortable" data-col="startdatum" onclick="toggleSort('startdatum')">
+              <th class="sortable" data-col="startdatum" onclick="toggleSort('startdatum')" style="width:140px;">
                 Startdatum <em class="sort-icon" id="si-startdatum">↕</em>
               </th>
-              <th class="sortable" data-col="einddatum" onclick="toggleSort('einddatum')">
+              <th class="sortable" data-col="einddatum" onclick="toggleSort('einddatum')" style="width:140px;">
                 Einddatum <em class="sort-icon" id="si-einddatum">↕</em>
               </th>
-              <th style="width:130px;">Acties</th>
+              <th style="width:140px;">Acties</th>
             </tr>
           </thead>
           <tbody id="table-body"></tbody>
         </table>
       </div>
+
       <div id="empty-state" class="empty-state hidden">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
           <rect x="4" y="2" width="16" height="20" rx="2" stroke="#6b7a99" stroke-width="1.5"/>
@@ -95,24 +107,23 @@
   </div>
 
 <script>
+'use strict';
+
 const LS_KEY = 'overeenkomsten_v1';
 let records = [];
 let editId = null;
 let sortCol = null;
-let sortDir = 1;
+let sortDir = 1; // 1 = asc, -1 = desc
 
+/* ---- Utilities ---- */
 function escHtml(s) {
   if (s == null) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-function loadData() {
-  try { records = JSON.parse(localStorage.getItem(LS_KEY)) || []; }
-  catch(e) { records = []; }
-}
-
-function saveData() {
-  localStorage.setItem(LS_KEY, JSON.stringify(records));
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function fmtDate(d) {
@@ -126,28 +137,46 @@ function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-function showMsg(el, text, type) {
+function showMsg(elId, text, type) {
+  const el = document.getElementById(elId);
   el.textContent = text;
   el.className = 'msg-' + type;
 }
 
-function clearMsg(el) {
+function clearMsg(elId) {
+  const el = document.getElementById(elId);
   el.textContent = '';
   el.className = 'hidden';
 }
 
+/* ---- Persistence ---- */
+function loadData() {
+  try {
+    records = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+  } catch (e) {
+    records = [];
+  }
+}
+
+function saveData() {
+  localStorage.setItem(LS_KEY, JSON.stringify(records));
+}
+
+/* ---- CRUD ---- */
 function saveRecord() {
   const omsch = document.getElementById('inp-omschrijving').value.trim();
   const start = document.getElementById('inp-startdatum').value;
-  const eind = document.getElementById('inp-einddatum').value;
-  const msgEl = document.getElementById('msg-form');
+  const eind  = document.getElementById('inp-einddatum').value;
 
-  if (!omsch) { showMsg(msgEl, 'Vul een omschrijving in.', 'error'); return; }
-  if (!start) { showMsg(msgEl, 'Vul een startdatum in.', 'error'); return; }
-  if (!eind) { showMsg(msgEl, 'Vul een einddatum in.', 'error'); return; }
-  if (eind < start) { showMsg(msgEl, 'Einddatum moet gelijk aan of na de startdatum liggen.', 'error'); return; }
+  if (!omsch) { showMsg('msg-form', 'Vul een omschrijving in.', 'error'); return; }
+  if (!start) { showMsg('msg-form', 'Vul een startdatum in.', 'error'); return; }
+  if (!eind)  { showMsg('msg-form', 'Vul een einddatum in.', 'error'); return; }
+  if (eind < start) {
+    showMsg('msg-form', 'Einddatum moet gelijk aan of na de startdatum liggen.', 'error');
+    return;
+  }
 
-  clearMsg(msgEl);
+  clearMsg('msg-form');
 
   if (editId) {
     const idx = records.findIndex(r => r.id === editId);
@@ -157,7 +186,6 @@ function saveRecord() {
     editId = null;
     document.getElementById('btn-cancel').classList.add('hidden');
     document.getElementById('msg-edit').classList.add('hidden');
-    document.getElementById('btn-save').textContent = 'Opslaan';
   } else {
     records.push({ id: genId(), omschrijving: omsch, startdatum: start, einddatum: eind });
   }
@@ -169,9 +197,9 @@ function saveRecord() {
 
 function clearForm() {
   document.getElementById('inp-omschrijving').value = '';
-  document.getElementById('inp-startdatum').value = '';
-  document.getElementById('inp-einddatum').value = '';
-  clearMsg(document.getElementById('msg-form'));
+  document.getElementById('inp-startdatum').value   = '';
+  document.getElementById('inp-einddatum').value    = '';
+  clearMsg('msg-form');
 }
 
 function cancelEdit() {
@@ -179,7 +207,7 @@ function cancelEdit() {
   clearForm();
   document.getElementById('btn-cancel').classList.add('hidden');
   document.getElementById('msg-edit').classList.add('hidden');
-  document.getElementById('btn-save').textContent = 'Opslaan';
+  renderTable();
 }
 
 function editRecord(id) {
@@ -187,11 +215,11 @@ function editRecord(id) {
   if (!r) return;
   editId = id;
   document.getElementById('inp-omschrijving').value = r.omschrijving;
-  document.getElementById('inp-startdatum').value = r.startdatum;
-  document.getElementById('inp-einddatum').value = r.einddatum;
+  document.getElementById('inp-startdatum').value   = r.startdatum;
+  document.getElementById('inp-einddatum').value    = r.einddatum;
   document.getElementById('btn-cancel').classList.remove('hidden');
   document.getElementById('msg-edit').classList.remove('hidden');
-  document.getElementById('btn-save').textContent = 'Opslaan';
+  clearMsg('msg-form');
   document.getElementById('inp-omschrijving').focus();
   renderTable();
 }
@@ -206,24 +234,28 @@ function deleteRecord(id) {
   renderTable();
 }
 
+/* ---- Sort ---- */
 function toggleSort(col) {
-  const ths = document.querySelectorAll('thead th[data-col]');
-  ths.forEach(th => {
+  // Reset all header styles
+  document.querySelectorAll('thead th[data-col]').forEach(th => {
     th.classList.remove('sorted');
     document.getElementById('si-' + th.dataset.col).textContent = '↕';
   });
+
   if (sortCol === col) {
     sortDir = -sortDir;
   } else {
     sortCol = col;
     sortDir = 1;
   }
+
   const th = document.querySelector('th[data-col="' + col + '"]');
   th.classList.add('sorted');
   document.getElementById('si-' + col).textContent = sortDir === 1 ? '↑' : '↓';
   renderTable();
 }
 
+/* ---- Filter & sort pipeline ---- */
 function getFiltered() {
   const q = document.getElementById('filter-omschrijving').value.trim().toLowerCase();
   return records.filter(r => !q || r.omschrijving.toLowerCase().includes(q));
@@ -234,16 +266,19 @@ function getSorted(list) {
   return list.slice().sort((a, b) => {
     const av = (a[sortCol] || '').toLowerCase();
     const bv = (b[sortCol] || '').toLowerCase();
-    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+    if (av < bv) return -sortDir;
+    if (av > bv) return  sortDir;
+    return 0;
   });
 }
 
+/* ---- Render ---- */
 function renderTable() {
   const filtered = getFiltered();
-  const sorted = getSorted(filtered);
-  const tbody = document.getElementById('table-body');
-  const empty = document.getElementById('empty-state');
-  const count = document.getElementById('record-count');
+  const sorted   = getSorted(filtered);
+  const tbody    = document.getElementById('table-body');
+  const empty    = document.getElementById('empty-state');
+  const count    = document.getElementById('record-count');
 
   count.textContent = 'Weergegeven: ' + filtered.length + ' / ' + records.length;
 
@@ -256,11 +291,11 @@ function renderTable() {
 
   tbody.innerHTML = sorted.map(r => {
     const isEditing = r.id === editId;
-    return '<tr class="' + (isEditing ? 'selected' : '') + '">' +
+    return '<tr' + (isEditing ? ' class="selected"' : '') + '>' +
       '<td>' + escHtml(r.omschrijving) + '</td>' +
       '<td>' + fmtDate(r.startdatum) + '</td>' +
       '<td>' + fmtDate(r.einddatum) + '</td>' +
-      '<td>' +
+      '<td class="col-actions">' +
         '<button class="btn btn-sm btn-edit" onclick="editRecord(\'' + r.id + '\')">Bewerk</button> ' +
         '<button class="btn btn-sm btn-danger" onclick="deleteRecord(\'' + r.id + '\')">Verwijder</button>' +
       '</td>' +
@@ -268,7 +303,7 @@ function renderTable() {
   }).join('');
 }
 
-// Enter key in omschrijving triggers save
+/* ---- Init ---- */
 document.getElementById('inp-omschrijving').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') saveRecord();
 });

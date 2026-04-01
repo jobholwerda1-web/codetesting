@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rapportage – Contractbeheer</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-icon">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="3" y1="9" x2="21" y2="9" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="3" y1="15" x2="21" y2="15" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="9" y1="9" x2="9" y2="21" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="15" y1="9" x2="15" y2="21" stroke="#7fb3f5" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <span class="header-title">Contractbeheer</span>
+      <span class="header-subtitle">Beheer van overeenkomsten, risico's en naleving</span>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="site-nav">
+    <a href="overeenkomsten.html">Overeenkomsten</a>
+    <a href="risicomatrix.html">Risicomatrix</a>
+    <a href="naleving.html">Naleving</a>
+    <a href="rapportage.html" class="active">Rapportage</a>
+  </nav>
+
+  <div class="main-container">
+
+    <!-- Settings card -->
+    <div class="card">
+      <div class="card-title">Rapportage instellen</div>
+
+      <div class="form-group" style="max-width:320px; margin-bottom:18px;">
+        <label for="sel-tabel">Selecteer tabel:</label>
+        <select id="sel-tabel" onchange="onTabelChange()">
+          <option value="">-- Kies tabel --</option>
+          <option value="overeenkomsten">Overeenkomsten</option>
+          <option value="risicomatrix">Risicomatrix</option>
+          <option value="naleving">Naleving</option>
+        </select>
+      </div>
+
+      <!-- Dynamic filter section -->
+      <div id="filter-section" class="hidden">
+        <div style="border-top:1px solid #d6dce8; padding-top:16px; margin-bottom:16px;">
+          <div style="font-size:0.84rem; font-weight:600; color:#1a2b4a; margin-bottom:12px;">Filters</div>
+
+          <!-- Overeenkomsten filters -->
+          <div id="filters-overeenkomsten" class="hidden">
+            <div class="form-row">
+              <div class="form-group" style="flex:2 1 200px;">
+                <label for="f-ovk-omschrijving">Omschrijving bevat:</label>
+                <input type="text" id="f-ovk-omschrijving" placeholder="Zoeken in omschrijving…">
+              </div>
+              <div class="form-group">
+                <label for="f-ovk-start-van">Startdatum van:</label>
+                <input type="date" id="f-ovk-start-van">
+              </div>
+              <div class="form-group">
+                <label for="f-ovk-start-tot">Startdatum tot:</label>
+                <input type="date" id="f-ovk-start-tot">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="f-ovk-eind-van">Einddatum van:</label>
+                <input type="date" id="f-ovk-eind-van">
+              </div>
+              <div class="form-group">
+                <label for="f-ovk-eind-tot">Einddatum tot:</label>
+                <input type="date" id="f-ovk-eind-tot">
+              </div>
+              <div class="form-group" style="flex:2 1 200px;"></div>
+            </div>
+          </div>
+
+          <!-- Risicomatrix filters -->
+          <div id="filters-risicomatrix" class="hidden">
+            <div class="form-row">
+              <div class="form-group" style="flex:2 1 200px;">
+                <label for="f-rm-omschrijving">Omschrijving bevat:</label>
+                <input type="text" id="f-rm-omschrijving" placeholder="Zoeken in omschrijving…">
+              </div>
+              <div class="form-group">
+                <label for="f-rm-inschatting">Inschatting:</label>
+                <select id="f-rm-inschatting">
+                  <option value="">Alle</option>
+                  <option value="laag">Laag</option>
+                  <option value="midden">Midden</option>
+                  <option value="hoog">Hoog</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="f-rm-overeenkomst">Overeenkomst:</label>
+                <select id="f-rm-overeenkomst">
+                  <option value="">Alle</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Naleving filters -->
+          <div id="filters-naleving" class="hidden">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="f-nal-peil-van">Peildatum van:</label>
+                <input type="date" id="f-nal-peil-van">
+              </div>
+              <div class="form-group">
+                <label for="f-nal-peil-tot">Peildatum tot:</label>
+                <input type="date" id="f-nal-peil-tot">
+              </div>
+              <div class="form-group" style="flex:2 1 200px;">
+                <label for="f-nal-signaal">Signaalomschrijving bevat:</label>
+                <input type="text" id="f-nal-signaal" placeholder="Zoeken…">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="flex:2 1 200px;">
+                <label for="f-nal-zorg">Zorgaanbieder bevat:</label>
+                <input type="text" id="f-nal-zorg" placeholder="Zoeken…">
+              </div>
+              <div class="form-group">
+                <label for="f-nal-actie">Opvolgingsactie:</label>
+                <select id="f-nal-actie">
+                  <option value="">Alle</option>
+                  <option value="Waarschuwingsbrief">Waarschuwingsbrief</option>
+                  <option value="Inkoopgesprek">Inkoopgesprek</option>
+                  <option value="In gebreke stellen">In gebreke stellen</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:2 1 200px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-genereer" onclick="genereerRapport()">Genereer rapport</button>
+      </div>
+    </div>
+
+    <!-- Results card (hidden until generated) -->
+    <div class="card hidden" id="card-results">
+      <div class="card-title">Rapportage resultaten</div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <span id="result-count" style="font-size:0.9rem; color:#1a2b4a; font-weight:600;"></span>
+        <button class="btn btn-success" id="btn-download" onclick="downloadCsv()">Download CSV</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead id="result-thead"></thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="result-empty" class="empty-state hidden">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="12" width="4" height="9" rx="1" stroke="#6b7a99" stroke-width="1.5"/>
+          <rect x="10" y="7" width="4" height="14" rx="1" stroke="#6b7a99" stroke-width="1.5"/>
+          <rect x="17" y="3" width="4" height="18" rx="1" stroke="#6b7a99" stroke-width="1.5"/>
+        </svg>
+        Geen resultaten gevonden voor de geselecteerde filters.
+      </div>
+    </div>
+  </div>
+
+<script>
+'use strict';
+
+/* ---- Utilities ---- */
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const parts = d.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return parts[2] + '-' + parts[1] + '-' + parts[0];
+  }
+  return d;
+}
+
+function loadLS(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch (e) { return []; }
+}
+
+/* ---- Data sources ---- */
+function getOvereenkomsten() { return loadLS('overeenkomsten_v1'); }
+function getRisicomatrix()   { return loadLS('risicomatrix_v1'); }
+function getNaleving()       { return loadLS('naleving_v1'); }
+
+function getOvkName(id, list) {
+  if (!id) return 'Niet gekoppeld';
+  const ovk = list.find(o => o.id === id);
+  return ovk ? ovk.omschrijving : 'Niet gekoppeld';
+}
+
+/* ---- Populate overeenkomst dropdown in risicomatrix filter ---- */
+function populateOvkFilter() {
+  const sel = document.getElementById('f-rm-overeenkomst');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Alle</option>';
+  getOvereenkomsten().forEach(ovk => {
+    const opt = document.createElement('option');
+    opt.value       = ovk.id;
+    opt.textContent = ovk.omschrijving;
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+/* ---- Table change handler ---- */
+function onTabelChange() {
+  const tabel = document.getElementById('sel-tabel').value;
+  const filterSection = document.getElementById('filter-section');
+
+  // Hide all filter groups
+  ['filters-overeenkomsten', 'filters-risicomatrix', 'filters-naleving'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+
+  if (!tabel) {
+    filterSection.classList.add('hidden');
+    return;
+  }
+
+  filterSection.classList.remove('hidden');
+
+  if (tabel === 'overeenkomsten') {
+    document.getElementById('filters-overeenkomsten').classList.remove('hidden');
+  } else if (tabel === 'risicomatrix') {
+    document.getElementById('filters-risicomatrix').classList.remove('hidden');
+    populateOvkFilter();
+  } else if (tabel === 'naleving') {
+    document.getElementById('filters-naleving').classList.remove('hidden');
+  }
+
+  // Hide results when table changes
+  document.getElementById('card-results').classList.add('hidden');
+}
+
+/* ---- Report state ---- */
+let lastResults  = [];
+let lastHeaders  = [];
+let lastTabelNm  = '';
+
+/* ---- Generate report ---- */
+function genereerRapport() {
+  const tabel = document.getElementById('sel-tabel').value;
+  if (!tabel) {
+    alert('Selecteer eerst een tabel.');
+    return;
+  }
+
+  let results = [];
+  let headers = [];
+  let tabelNm = '';
+
+  if (tabel === 'overeenkomsten') {
+    tabelNm = 'overeenkomsten';
+    headers = ['Omschrijving', 'Startdatum', 'Einddatum'];
+    const data   = getOvereenkomsten();
+    const fOmsch = document.getElementById('f-ovk-omschrijving').value.trim().toLowerCase();
+    const fSVan  = document.getElementById('f-ovk-start-van').value;
+    const fSTot  = document.getElementById('f-ovk-start-tot').value;
+    const fEVan  = document.getElementById('f-ovk-eind-van').value;
+    const fETot  = document.getElementById('f-ovk-eind-tot').value;
+
+    results = data.filter(r => {
+      if (fOmsch && !r.omschrijving.toLowerCase().includes(fOmsch)) return false;
+      if (fSVan && r.startdatum < fSVan) return false;
+      if (fSTot && r.startdatum > fSTot) return false;
+      if (fEVan && r.einddatum < fEVan) return false;
+      if (fETot && r.einddatum > fETot) return false;
+      return true;
+    }).map(r => ({
+      Omschrijving: r.omschrijving,
+      Startdatum:   fmtDate(r.startdatum),
+      Einddatum:    fmtDate(r.einddatum)
+    }));
+
+  } else if (tabel === 'risicomatrix') {
+    tabelNm = 'risicomatrix';
+    headers = ['Omschrijving', 'Overeenkomst', 'Inschatting'];
+    const data  = getRisicomatrix();
+    const ovkList = getOvereenkomsten();
+    const fOmsch  = document.getElementById('f-rm-omschrijving').value.trim().toLowerCase();
+    const fInsch  = document.getElementById('f-rm-inschatting').value;
+    const fOvk    = document.getElementById('f-rm-overeenkomst').value;
+    const INSCH_LABEL = { laag: 'Laag', midden: 'Midden', hoog: 'Hoog' };
+
+    results = data.filter(r => {
+      if (fOmsch && !r.omschrijving.toLowerCase().includes(fOmsch)) return false;
+      if (fInsch && r.inschatting !== fInsch) return false;
+      if (fOvk   && (r.overeenkomstId || '') !== fOvk) return false;
+      return true;
+    }).map(r => ({
+      Omschrijving: r.omschrijving,
+      Overeenkomst: getOvkName(r.overeenkomstId, ovkList),
+      Inschatting:  INSCH_LABEL[r.inschatting] || r.inschatting
+    }));
+
+  } else if (tabel === 'naleving') {
+    tabelNm = 'naleving';
+    headers = ['Peildatum', 'Signaalomschrijving', 'Zorgaanbieder', 'Opvolgingsacties'];
+    const data    = getNaleving();
+    const fPVan   = document.getElementById('f-nal-peil-van').value;
+    const fPTot   = document.getElementById('f-nal-peil-tot').value;
+    const fSignaal = document.getElementById('f-nal-signaal').value.trim().toLowerCase();
+    const fZorg   = document.getElementById('f-nal-zorg').value.trim().toLowerCase();
+    const fActie  = document.getElementById('f-nal-actie').value;
+
+    results = data.filter(r => {
+      if (fPVan   && r.peildatum < fPVan) return false;
+      if (fPTot   && r.peildatum > fPTot) return false;
+      if (fSignaal && !r.signaalomschrijving.toLowerCase().includes(fSignaal)) return false;
+      if (fZorg   && !r.zorgaanbieder.toLowerCase().includes(fZorg)) return false;
+      if (fActie  && !(r.acties || []).includes(fActie)) return false;
+      return true;
+    }).map(r => ({
+      Peildatum:            fmtDate(r.peildatum),
+      Signaalomschrijving:  r.signaalomschrijving,
+      Zorgaanbieder:        r.zorgaanbieder,
+      Opvolgingsacties:     (r.acties || []).join('; ')
+    }));
+  }
+
+  lastResults = results;
+  lastHeaders = headers;
+  lastTabelNm = tabelNm;
+
+  renderResults(results, headers);
+}
+
+/* ---- Render results ---- */
+function renderResults(results, headers) {
+  const card    = document.getElementById('card-results');
+  const thead   = document.getElementById('result-thead');
+  const tbody   = document.getElementById('result-tbody');
+  const empty   = document.getElementById('result-empty');
+  const count   = document.getElementById('result-count');
+
+  card.classList.remove('hidden');
+  count.textContent = results.length + ' resultaat' + (results.length !== 1 ? 'en' : '') + ' gevonden';
+
+  // Build header row
+  thead.innerHTML = '<tr>' +
+    headers.map(h => '<th>' + escHtml(h) + '</th>').join('') +
+  '</tr>';
+
+  if (results.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('btn-download').style.display = 'none';
+    return;
+  }
+
+  empty.classList.add('hidden');
+  document.getElementById('btn-download').style.display = '';
+
+  tbody.innerHTML = results.map(row => {
+    return '<tr>' +
+      headers.map(h => '<td>' + escHtml(row[h] != null ? row[h] : '') + '</td>').join('') +
+    '</tr>';
+  }).join('');
+
+  // Scroll results into view
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---- Download CSV ---- */
+function downloadCsv() {
+  if (lastResults.length === 0 || lastHeaders.length === 0) return;
+
+  function csvCell(val) {
+    val = String(val == null ? '' : val);
+    if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+      return '"' + val.replace(/"/g, '""') + '"';
+    }
+    return val;
+  }
+
+  const rows = [
+    lastHeaders.map(csvCell).join(',')
+  ];
+
+  lastResults.forEach(row => {
+    rows.push(lastHeaders.map(h => csvCell(row[h] != null ? row[h] : '')).join(','));
+  });
+
+  const csvContent = rows.join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = lastTabelNm + '_rapport.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

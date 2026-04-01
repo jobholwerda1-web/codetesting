@@ -1,446 +1,435 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Risicomatrix</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      font-size: 14px;
-      background: #f0f2f5;
-      color: #1a1a2e;
-    }
-
-    /* ── Header ── */
-    header {
-      background: #1a2b4a;
-      color: #fff;
-      padding: 18px 32px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 3px solid #2e5fa3;
-    }
-    header h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.5px; }
-    header span.subtitle {
-      font-size: 12px;
-      color: #8fa8cc;
-      margin-left: auto;
-    }
-
-    /* ── Layout ── */
-    main {
-      max-width: 900px;
-      margin: 28px auto;
-      padding: 0 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    /* ── Card ── */
-    .card {
-      background: #fff;
-      border: 1px solid #d6dce8;
-      border-radius: 6px;
-      padding: 20px 24px;
-    }
-    .card-title {
-      font-size: 13px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      color: #2e5fa3;
-      margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #e8ecf3;
-    }
-
-    /* ── Form ── */
-    .form-row {
-      display: flex;
-      gap: 12px;
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 12px; font-weight: 600; color: #4a5568; }
-
-    .form-group.description { flex: 1 1 340px; }
-    .form-group.assessment  { flex: 0 0 160px; }
-
-    input[type="text"], select {
-      padding: 8px 10px;
-      border: 1px solid #c8d0de;
-      border-radius: 4px;
-      font-size: 14px;
-      color: #1a1a2e;
-      background: #fafbfd;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    input[type="text"]:focus, select:focus { border-color: #2e5fa3; background: #fff; }
-    input[type="text"]::placeholder { color: #aab2c0; }
-
-    .btn {
-      padding: 8px 18px;
-      border: none;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary   { background: #2e5fa3; color: #fff; }
-    .btn-primary:hover { background: #245290; }
-    .btn-secondary { background: #e4e9f2; color: #3a4a63; }
-    .btn-secondary:hover { background: #d0d8eb; }
-    .btn-danger    { background: transparent; border: 1px solid #e0e0e0; color: #b04040; padding: 5px 10px; font-size: 12px; }
-    .btn-danger:hover { background: #fdf0f0; border-color: #b04040; }
-    .btn-edit      { background: transparent; border: 1px solid #e0e0e0; color: #2e5fa3; padding: 5px 10px; font-size: 12px; }
-    .btn-edit:hover { background: #f0f4fb; border-color: #2e5fa3; }
-
-    #form-error {
-      font-size: 12px;
-      color: #b04040;
-      margin-top: 6px;
-      min-height: 16px;
-    }
-    #edit-notice {
-      font-size: 12px;
-      color: #2e5fa3;
-      margin-top: 6px;
-      min-height: 16px;
-    }
-
-    /* ── Toolbar ── */
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .toolbar label { font-size: 12px; font-weight: 600; color: #4a5568; }
-    .toolbar select { font-size: 13px; padding: 6px 9px; }
-    .risk-count {
-      margin-left: auto;
-      font-size: 12px;
-      color: #6b7a99;
-    }
-    .risk-count span { font-weight: 700; color: #1a2b4a; }
-
-    /* ── Table ── */
-    .table-wrapper {
-      max-height: 360px;
-      overflow-y: auto;
-      border: 1px solid #d6dce8;
-      border-radius: 4px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    thead th {
-      position: sticky;
-      top: 0;
-      background: #1a2b4a;
-      color: #c8d8f0;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 10px 14px;
-      text-align: left;
-      user-select: none;
-      white-space: nowrap;
-      cursor: pointer;
-    }
-    thead th:hover { background: #223660; }
-    thead th .sort-icon { margin-left: 5px; opacity: 0.5; font-style: normal; }
-    thead th.active .sort-icon { opacity: 1; color: #7fb3f5; }
-    thead th:last-child { cursor: default; text-align: center; }
-
-    tbody tr { border-bottom: 1px solid #edf0f7; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #f6f8fd; }
-    tbody tr.editing-row { background: #eef4ff; }
-
-    td { padding: 10px 14px; vertical-align: middle; }
-    td.td-desc { max-width: 500px; word-break: break-word; }
-    td.td-badge { white-space: nowrap; }
-    td.td-actions { text-align: center; white-space: nowrap; }
-    td.td-actions { display: flex; gap: 6px; justify-content: center; }
-
-    /* ── Badge ── */
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-    .badge-laag  { background: #e6f4ea; color: #276b3a; border: 1px solid #b2dfc0; }
-    .badge-midden { background: #fff4e0; color: #8a5c00; border: 1px solid #f5d87a; }
-    .badge-hoog  { background: #fdecea; color: #9c2c2c; border: 1px solid #f5b4b4; }
-
-    /* ── Empty state ── */
-    .empty-state {
-      text-align: center;
-      padding: 40px 0;
-      color: #9aaac0;
-      font-size: 13px;
-    }
-
-    /* ── Scrollbar ── */
-    .table-wrapper::-webkit-scrollbar { width: 6px; }
-    .table-wrapper::-webkit-scrollbar-track { background: #f0f2f5; }
-    .table-wrapper::-webkit-scrollbar-thumb { background: #b0bcce; border-radius: 3px; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Risicomatrix – Contractbeheer</title>
+  <link rel="stylesheet" href="shared.css">
 </head>
 <body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-icon">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="3" y1="9" x2="21" y2="9" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="3" y1="15" x2="21" y2="15" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="9" y1="9" x2="9" y2="21" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="15" y1="9" x2="15" y2="21" stroke="#7fb3f5" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <span class="header-title">Contractbeheer</span>
+      <span class="header-subtitle">Beheer van overeenkomsten, risico's en naleving</span>
+    </div>
+  </header>
 
-<header>
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7fb3f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
-    <line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
-  </svg>
-  <h1>Risicomatrix</h1>
-  <span class="subtitle">Projectrisico beheer</span>
-</header>
+  <!-- Nav -->
+  <nav class="site-nav">
+    <a href="overeenkomsten.html">Overeenkomsten</a>
+    <a href="risicomatrix.html" class="active">Risicomatrix</a>
+    <a href="naleving.html">Naleving</a>
+    <a href="rapportage.html">Rapportage</a>
+  </nav>
 
-<main>
+  <div class="main-container">
 
-  <!-- Invoerformulier -->
-  <div class="card">
-    <div class="card-title" id="form-card-title">Risico toevoegen</div>
-    <div class="form-row">
-      <div class="form-group description">
-        <label for="input-desc">Omschrijving</label>
-        <input type="text" id="input-desc" placeholder="Beschrijf het risico..." maxlength="200" autocomplete="off" />
+    <!-- Form card -->
+    <div class="card">
+      <div class="card-title">Risico toevoegen / bewerken</div>
+
+      <div class="form-row">
+        <div class="form-group" style="flex: 2 1 300px;">
+          <label for="inp-omschrijving">Omschrijving <span style="color:#b04040">*</span></label>
+          <input type="text" id="inp-omschrijving" maxlength="200"
+                 placeholder="Beschrijf het risico..." autocomplete="off">
+        </div>
+        <div class="form-group" style="flex: 1 1 200px;">
+          <label for="inp-overeenkomst">Overeenkomst <span style="color:#b04040">*</span></label>
+          <select id="inp-overeenkomst">
+            <option value="" disabled selected>-- Kies overeenkomst --</option>
+          </select>
+        </div>
+        <div class="form-group" style="flex: 0 1 160px;">
+          <label for="inp-inschatting">Inschatting <span style="color:#b04040">*</span></label>
+          <select id="inp-inschatting">
+            <option value="" disabled selected>-- Kies --</option>
+            <option value="laag">Laag</option>
+            <option value="midden">Midden</option>
+            <option value="hoog">Hoog</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group assessment">
-        <label for="input-level">Inschatting</label>
-        <select id="input-level">
-          <option value="">-- Kies --</option>
+
+      <div id="msg-no-overeenkomsten" class="msg-error hidden">
+        Er zijn nog geen overeenkomsten. Voeg eerst een overeenkomst toe op de pagina
+        <a href="overeenkomsten.html">Overeenkomsten</a> voordat u risico's kunt toevoegen.
+      </div>
+      <div id="msg-limit" class="msg-error hidden">
+        Maximum van 50 risico's bereikt. Verwijder een risico om nieuwe risico's toe te kunnen voegen.
+      </div>
+      <div id="msg-form" class="hidden"></div>
+      <div id="msg-edit" class="msg-info hidden">
+        Bewerkingsmodus — pas de velden aan en klik op <strong>Opslaan</strong> om de wijziging te bevestigen.
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-save" onclick="saveRecord()">Opslaan</button>
+        <button class="btn btn-secondary hidden" id="btn-cancel" onclick="cancelEdit()">Annuleren</button>
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="card">
+      <div class="card-title">Overzicht risico's</div>
+
+      <div class="toolbar">
+        <label for="filter-inschatting">Inschatting:</label>
+        <select id="filter-inschatting" onchange="renderTable()">
+          <option value="">Alle</option>
           <option value="laag">Laag</option>
           <option value="midden">Midden</option>
           <option value="hoog">Hoog</option>
         </select>
+        <label for="filter-overeenkomst">Overeenkomst:</label>
+        <select id="filter-overeenkomst" onchange="renderTable()">
+          <option value="">Alle</option>
+        </select>
+        <span class="record-count" id="record-count">Weergegeven: 0 / 0</span>
       </div>
-      <div class="form-group" style="flex-direction:row;gap:8px;">
-        <button class="btn btn-primary" id="btn-save" onclick="saveRisk()">Opslaan</button>
-        <button class="btn btn-secondary" id="btn-cancel" onclick="cancelEdit()" style="display:none">Annuleren</button>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-col="omschrijving" onclick="toggleSort('omschrijving')">
+                Omschrijving <em class="sort-icon" id="si-omschrijving">↕</em>
+              </th>
+              <th class="sortable" data-col="overeenkomst" onclick="toggleSort('overeenkomst')" style="width:200px;">
+                Overeenkomst <em class="sort-icon" id="si-overeenkomst">↕</em>
+              </th>
+              <th class="sortable" data-col="inschatting" onclick="toggleSort('inschatting')" style="width:130px;">
+                Inschatting <em class="sort-icon" id="si-inschatting">↕</em>
+              </th>
+              <th style="width:140px;">Acties</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
       </div>
-    </div>
-    <div id="form-error"></div>
-    <div id="edit-notice"></div>
-  </div>
 
-  <!-- Lijst -->
-  <div class="card">
-    <div class="card-title">Overzicht risico's</div>
-
-    <div class="toolbar" style="margin-bottom:14px;">
-      <label for="filter-level">Filter inschatting:</label>
-      <select id="filter-level" onchange="renderTable()">
-        <option value="">Alle</option>
-        <option value="laag">Laag</option>
-        <option value="midden">Midden</option>
-        <option value="hoog">Hoog</option>
-      </select>
-      <span class="risk-count">Weergegeven: <span id="count-shown">0</span> / <span id="count-total">0</span></span>
-    </div>
-
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th id="th-desc" onclick="setSort('desc')" title="Sorteren op omschrijving">
-              Omschrijving <em class="sort-icon" id="si-desc">↕</em>
-            </th>
-            <th id="th-level" onclick="setSort('level')" title="Sorteren op inschatting" style="width:140px;">
-              Inschatting <em class="sort-icon" id="si-level">↕</em>
-            </th>
-            <th style="width:110px;">Acties</th>
-          </tr>
-        </thead>
-        <tbody id="risk-tbody"></tbody>
-      </table>
+      <div id="empty-state" class="empty-state hidden">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3L22 20H2L12 3Z" stroke="#6b7a99" stroke-width="1.5" stroke-linejoin="round"/>
+          <line x1="12" y1="10" x2="12" y2="14" stroke="#6b7a99" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="12" cy="17" r="1" fill="#6b7a99"/>
+        </svg>
+        Geen risico's gevonden.
+      </div>
     </div>
   </div>
-
-</main>
 
 <script>
-  const STORAGE_KEY = 'risicomatrix_v1';
-  const MAX_RISKS = 50;
+'use strict';
 
-  let risks = [];
-  let editingId = null;
-  let sortCol = null;   // 'desc' | 'level' | null
-  let sortDir = 'asc';  // 'asc' | 'desc'
+const LS_KEY      = 'risicomatrix_v1';
+const LS_OVK_KEY  = 'overeenkomsten_v1';
+const MAX_RECORDS = 50;
 
-  const LEVEL_ORDER = { laag: 1, midden: 2, hoog: 3 };
+let records      = [];
+let overeenkomsten = [];
+let editId       = null;
+let sortCol      = null;
+let sortDir      = 1; // 1 = asc, -1 = desc
 
-  // ── Persistence ────────────────────────────────────────
-  function load() {
-    try { risks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { risks = []; }
-  }
+const INSCH_ORDER = { laag: 1, midden: 2, hoog: 3 };
+const INSCH_LABEL = { laag: 'Laag', midden: 'Midden', hoog: 'Hoog' };
 
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(risks));
-  }
+/* ---- Utilities ---- */
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
-  // ── Helpers ─────────────────────────────────────────────
-  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
 
-  function showError(msg) { document.getElementById('form-error').textContent = msg; }
-  function showNotice(msg) { document.getElementById('edit-notice').textContent = msg; }
+function showMsg(elId, text, type) {
+  const el = document.getElementById(elId);
+  el.innerHTML = text;
+  el.className = 'msg-' + type;
+}
 
-  // ── Sort ────────────────────────────────────────────────
-  function setSort(col) {
-    if (sortCol === col) {
-      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortCol = col;
-      sortDir = 'asc';
-    }
-    renderTable();
-  }
+function clearMsg(elId) {
+  const el = document.getElementById(elId);
+  el.textContent = '';
+  el.className = 'hidden';
+}
 
-  function updateSortIcons() {
-    ['desc', 'level'].forEach(col => {
-      const th = document.getElementById('th-' + col);
-      const si = document.getElementById('si-' + col);
-      th.classList.toggle('active', sortCol === col);
-      si.textContent = sortCol === col ? (sortDir === 'asc' ? '↑' : '↓') : '↕';
+/* ---- Persistence ---- */
+function loadData() {
+  try { records = JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  catch (e) { records = []; }
+
+  try { overeenkomsten = JSON.parse(localStorage.getItem(LS_OVK_KEY)) || []; }
+  catch (e) { overeenkomsten = []; }
+}
+
+function saveData() {
+  localStorage.setItem(LS_KEY, JSON.stringify(records));
+}
+
+/* ---- Overeenkomst helpers ---- */
+function getOvkName(overeenkomstId) {
+  if (!overeenkomstId) return 'Niet gekoppeld';
+  const ovk = overeenkomsten.find(o => o.id === overeenkomstId);
+  return ovk ? ovk.omschrijving : 'Niet gekoppeld';
+}
+
+/* ---- Populate dropdowns ---- */
+function populateOvkDropdowns() {
+  const formSel   = document.getElementById('inp-overeenkomst');
+  const filterSel = document.getElementById('filter-overeenkomst');
+
+  // Form dropdown
+  formSel.innerHTML = '';
+  if (overeenkomsten.length === 0) {
+    const opt = document.createElement('option');
+    opt.value    = '';
+    opt.disabled = true;
+    opt.selected = true;
+    opt.textContent = 'Voeg eerst een overeenkomst toe';
+    formSel.appendChild(opt);
+    formSel.disabled = true;
+
+    document.getElementById('msg-no-overeenkomsten').classList.remove('hidden');
+    document.getElementById('btn-save').disabled = true;
+  } else {
+    formSel.disabled = false;
+    document.getElementById('msg-no-overeenkomsten').classList.add('hidden');
+    document.getElementById('btn-save').disabled = false;
+
+    const placeholder = document.createElement('option');
+    placeholder.value    = '';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    placeholder.textContent = '-- Kies overeenkomst --';
+    formSel.appendChild(placeholder);
+
+    overeenkomsten.forEach(ovk => {
+      const opt = document.createElement('option');
+      opt.value       = ovk.id;
+      opt.textContent = ovk.omschrijving;
+      formSel.appendChild(opt);
     });
   }
 
-  // ── Render ──────────────────────────────────────────────
-  function renderTable() {
-    const filterVal = document.getElementById('filter-level').value;
-    const tbody = document.getElementById('risk-tbody');
+  // Filter dropdown
+  const currentFilter = filterSel.value;
+  filterSel.innerHTML = '<option value="">Alle</option>';
+  overeenkomsten.forEach(ovk => {
+    const opt = document.createElement('option');
+    opt.value       = ovk.id;
+    opt.textContent = ovk.omschrijving;
+    filterSel.appendChild(opt);
+  });
+  // Restore selection if still valid
+  if (currentFilter) {
+    filterSel.value = currentFilter;
+  }
+}
 
-    let visible = filterVal ? risks.filter(r => r.level === filterVal) : [...risks];
+/* ---- CRUD ---- */
+function saveRecord() {
+  const omsch       = document.getElementById('inp-omschrijving').value.trim();
+  const ovkId       = document.getElementById('inp-overeenkomst').value;
+  const inschatting = document.getElementById('inp-inschatting').value;
 
-    if (sortCol) {
-      visible.sort((a, b) => {
-        let va, vb;
-        if (sortCol === 'desc') {
-          va = a.desc.toLowerCase(); vb = b.desc.toLowerCase();
-        } else {
-          va = LEVEL_ORDER[a.level]; vb = LEVEL_ORDER[b.level];
-        }
-        if (va < vb) return sortDir === 'asc' ? -1 : 1;
-        if (va > vb) return sortDir === 'asc' ?  1 : -1;
-        return 0;
-      });
+  clearMsg('msg-form');
+
+  if (!omsch)       { showMsg('msg-form', 'Vul een omschrijving in.', 'error'); return; }
+  if (!ovkId)       { showMsg('msg-form', 'Selecteer een overeenkomst.', 'error'); return; }
+  if (!inschatting) { showMsg('msg-form', 'Selecteer een inschatting.', 'error'); return; }
+
+  if (editId) {
+    const idx = records.findIndex(r => r.id === editId);
+    if (idx !== -1) {
+      records[idx] = {
+        id: editId,
+        omschrijving: omsch,
+        inschatting:  inschatting,
+        overeenkomstId: ovkId
+      };
     }
-
-    document.getElementById('count-shown').textContent = visible.length;
-    document.getElementById('count-total').textContent = risks.length;
-    updateSortIcons();
-
-    if (visible.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state">Geen risico's gevonden.</div></td></tr>`;
+    editId = null;
+    document.getElementById('btn-cancel').classList.add('hidden');
+    document.getElementById('msg-edit').classList.add('hidden');
+  } else {
+    if (records.length >= MAX_RECORDS) {
+      document.getElementById('msg-limit').classList.remove('hidden');
       return;
     }
-
-    tbody.innerHTML = visible.map(r => {
-      const isEditing = r.id === editingId;
-      const labelMap = { laag: 'Laag', midden: 'Midden', hoog: 'Hoog' };
-      return `
-        <tr class="${isEditing ? 'editing-row' : ''}">
-          <td class="td-desc">${escHtml(r.desc)}</td>
-          <td class="td-badge"><span class="badge badge-${r.level}">${labelMap[r.level]}</span></td>
-          <td class="td-actions">
-            <button class="btn btn-edit" onclick="startEdit('${r.id}')" title="Bewerken">Bewerk</button>
-            <button class="btn btn-danger" onclick="deleteRisk('${r.id}')" title="Verwijderen">Verwijder</button>
-          </td>
-        </tr>`;
-    }).join('');
+    document.getElementById('msg-limit').classList.add('hidden');
+    records.push({
+      id:             genId(),
+      omschrijving:   omsch,
+      inschatting:    inschatting,
+      overeenkomstId: ovkId
+    });
   }
 
-  function escHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── CRUD ────────────────────────────────────────────────
-  function saveRisk() {
-    showError('');
-    const desc  = document.getElementById('input-desc').value.trim();
-    const level = document.getElementById('input-level').value;
-
-    if (!desc)  { showError('Voer een omschrijving in.'); return; }
-    if (!level) { showError('Selecteer een inschatting.'); return; }
-
-    if (editingId) {
-      const r = risks.find(x => x.id === editingId);
-      if (r) { r.desc = desc; r.level = level; }
-      cancelEdit();
-    } else {
-      if (risks.length >= MAX_RISKS) {
-        showError(`Maximum van ${MAX_RISKS} risico's bereikt.`);
-        return;
-      }
-      risks.push({ id: uid(), desc, level });
-      document.getElementById('input-desc').value  = '';
-      document.getElementById('input-level').value = '';
-    }
-
-    save();
-    renderTable();
-  }
-
-  function startEdit(id) {
-    const r = risks.find(x => x.id === id);
-    if (!r) return;
-    editingId = id;
-    document.getElementById('input-desc').value  = r.desc;
-    document.getElementById('input-level').value = r.level;
-    document.getElementById('form-card-title').textContent = 'Risico bewerken';
-    document.getElementById('btn-cancel').style.display = '';
-    showError('');
-    showNotice('U bewerkt een bestaand risico. Sla op om de wijziging te bevestigen.');
-    renderTable();
-    document.getElementById('input-desc').focus();
-  }
-
-  function cancelEdit() {
-    editingId = null;
-    document.getElementById('input-desc').value  = '';
-    document.getElementById('input-level').value = '';
-    document.getElementById('form-card-title').textContent = 'Risico toevoegen';
-    document.getElementById('btn-cancel').style.display = 'none';
-    showError('');
-    showNotice('');
-    renderTable();
-  }
-
-  function deleteRisk(id) {
-    if (!confirm('Weet u zeker dat u dit risico wilt verwijderen?')) return;
-    risks = risks.filter(r => r.id !== id);
-    if (editingId === id) cancelEdit();
-    save();
-    renderTable();
-  }
-
-  // ── Init ────────────────────────────────────────────────
-  load();
+  saveData();
+  clearForm();
   renderTable();
+}
 
-  // Enter-toets in omschrijving veld
-  document.getElementById('input-desc').addEventListener('keydown', e => {
-    if (e.key === 'Enter') saveRisk();
+function clearForm() {
+  document.getElementById('inp-omschrijving').value = '';
+  document.getElementById('inp-inschatting').value  = '';
+  // Reset overeenkomst select to placeholder
+  const sel = document.getElementById('inp-overeenkomst');
+  sel.selectedIndex = 0;
+  clearMsg('msg-form');
+}
+
+function cancelEdit() {
+  editId = null;
+  clearForm();
+  document.getElementById('btn-cancel').classList.add('hidden');
+  document.getElementById('msg-edit').classList.add('hidden');
+  renderTable();
+}
+
+function editRecord(id) {
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  editId = id;
+  document.getElementById('inp-omschrijving').value = r.omschrijving;
+  document.getElementById('inp-inschatting').value  = r.inschatting;
+  // Set overeenkomst
+  const sel = document.getElementById('inp-overeenkomst');
+  sel.value = r.overeenkomstId || '';
+  document.getElementById('btn-cancel').classList.remove('hidden');
+  document.getElementById('msg-edit').classList.remove('hidden');
+  clearMsg('msg-form');
+  document.getElementById('inp-omschrijving').focus();
+  renderTable();
+}
+
+function deleteRecord(id) {
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  if (!confirm('Risico "' + r.omschrijving + '" verwijderen?')) return;
+  records = records.filter(r => r.id !== id);
+  if (editId === id) cancelEdit();
+  // Hide limit message if now under limit
+  if (records.length < MAX_RECORDS) {
+    document.getElementById('msg-limit').classList.add('hidden');
+  }
+  saveData();
+  renderTable();
+}
+
+/* ---- Sort ---- */
+function toggleSort(col) {
+  document.querySelectorAll('thead th[data-col]').forEach(th => {
+    th.classList.remove('sorted');
+    document.getElementById('si-' + th.dataset.col).textContent = '↕';
   });
+
+  if (sortCol === col) {
+    sortDir = -sortDir;
+  } else {
+    sortCol = col;
+    sortDir = 1;
+  }
+
+  const th = document.querySelector('th[data-col="' + col + '"]');
+  th.classList.add('sorted');
+  document.getElementById('si-' + col).textContent = sortDir === 1 ? '↑' : '↓';
+  renderTable();
+}
+
+/* ---- Filter pipeline ---- */
+function getFiltered() {
+  const fInsch = document.getElementById('filter-inschatting').value;
+  const fOvk   = document.getElementById('filter-overeenkomst').value;
+
+  return records.filter(r => {
+    if (fInsch && r.inschatting !== fInsch) return false;
+    if (fOvk   && (r.overeenkomstId || '') !== fOvk) return false;
+    return true;
+  });
+}
+
+function getSorted(list) {
+  if (!sortCol) return list;
+  return list.slice().sort((a, b) => {
+    let av, bv;
+    if (sortCol === 'inschatting') {
+      av = INSCH_ORDER[a.inschatting] || 0;
+      bv = INSCH_ORDER[b.inschatting] || 0;
+      return (av - bv) * sortDir;
+    } else if (sortCol === 'overeenkomst') {
+      av = getOvkName(a.overeenkomstId).toLowerCase();
+      bv = getOvkName(b.overeenkomstId).toLowerCase();
+    } else {
+      av = (a[sortCol] || '').toLowerCase();
+      bv = (b[sortCol] || '').toLowerCase();
+    }
+    if (av < bv) return -sortDir;
+    if (av > bv) return  sortDir;
+    return 0;
+  });
+}
+
+/* ---- Render ---- */
+function renderTable() {
+  const filtered = getFiltered();
+  const sorted   = getSorted(filtered);
+  const tbody    = document.getElementById('table-body');
+  const empty    = document.getElementById('empty-state');
+  const count    = document.getElementById('record-count');
+
+  count.textContent = 'Weergegeven: ' + filtered.length + ' / ' + records.length;
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = sorted.map(r => {
+    const isEditing = r.id === editId;
+    const ovkName   = getOvkName(r.overeenkomstId);
+    const inschLbl  = INSCH_LABEL[r.inschatting] || r.inschatting;
+    return '<tr' + (isEditing ? ' class="selected"' : '') + '>' +
+      '<td>' + escHtml(r.omschrijving) + '</td>' +
+      '<td>' + escHtml(ovkName) + '</td>' +
+      '<td><span class="badge badge-' + escHtml(r.inschatting) + '">' + escHtml(inschLbl) + '</span></td>' +
+      '<td class="col-actions">' +
+        '<button class="btn btn-sm btn-edit" onclick="editRecord(\'' + r.id + '\')">Bewerk</button> ' +
+        '<button class="btn btn-sm btn-danger" onclick="deleteRecord(\'' + r.id + '\')">Verwijder</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+/* ---- Init ---- */
+document.getElementById('inp-omschrijving').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') saveRecord();
+});
+
+loadData();
+populateOvkDropdowns();
+renderTable();
 </script>
 </body>
 </html>

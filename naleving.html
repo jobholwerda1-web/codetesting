@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naleving – Contractbeheer</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-icon">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="3" y1="9" x2="21" y2="9" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="3" y1="15" x2="21" y2="15" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="9" y1="9" x2="9" y2="21" stroke="#7fb3f5" stroke-width="2"/>
+        <line x1="15" y1="9" x2="15" y2="21" stroke="#7fb3f5" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <span class="header-title">Contractbeheer</span>
+      <span class="header-subtitle">Beheer van overeenkomsten, risico's en naleving</span>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="site-nav">
+    <a href="overeenkomsten.html">Overeenkomsten</a>
+    <a href="risicomatrix.html">Risicomatrix</a>
+    <a href="naleving.html" class="active">Naleving</a>
+    <a href="rapportage.html">Rapportage</a>
+  </nav>
+
+  <div class="main-container">
+
+    <!-- Input cards (side by side) -->
+    <div class="cards-row">
+
+      <!-- Manual input card -->
+      <div class="card">
+        <div class="card-title">Handmatige invoer</div>
+        <div class="form-group">
+          <label for="inp-peildatum">Peildatum <span style="color:#b04040">*</span></label>
+          <input type="date" id="inp-peildatum">
+        </div>
+        <div class="form-group">
+          <label for="inp-signaal">Signaalomschrijving <span style="color:#b04040">*</span></label>
+          <input type="text" id="inp-signaal" maxlength="300"
+                 placeholder="Omschrijving van het signaal" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="inp-zorgaanbieder">Zorgaanbieder <span style="color:#b04040">*</span></label>
+          <input type="text" id="inp-zorgaanbieder" maxlength="200"
+                 placeholder="Naam van de zorgaanbieder" autocomplete="off">
+        </div>
+        <div id="msg-manual" class="hidden"></div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="addManual()">Toevoegen</button>
+        </div>
+      </div>
+
+      <!-- CSV import card -->
+      <div class="card">
+        <div class="card-title">CSV importeren</div>
+        <div class="instructions">
+          CSV formaat: <strong>peildatum,signaalomschrijving,zorgaanbieder</strong><br>
+          (met of zonder headerregel)<br>
+          Datumformaten: YYYY-MM-DD, DD-MM-YYYY of DD/MM/YYYY
+        </div>
+        <div class="form-group">
+          <label for="inp-csv-file">CSV-bestand <span style="color:#b04040">*</span></label>
+          <input type="file" id="inp-csv-file" accept=".csv,text/csv">
+        </div>
+        <div id="msg-csv" class="hidden"></div>
+        <div class="btn-row">
+          <button class="btn btn-success" onclick="importCsv()">Importeren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action panel (hidden until row selected) -->
+    <div class="card hidden" id="card-action">
+      <div class="card-title" id="action-card-title">Actie toevoegen voor: —</div>
+      <div class="form-group">
+        <label for="inp-actie">Opvolgingsactie <span style="color:#b04040">*</span></label>
+        <select id="inp-actie">
+          <option value="Waarschuwingsbrief">Waarschuwingsbrief</option>
+          <option value="Inkoopgesprek">Inkoopgesprek</option>
+          <option value="In gebreke stellen">In gebreke stellen</option>
+        </select>
+      </div>
+      <div id="msg-action" class="hidden"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="addAction()">Toevoegen</button>
+        <button class="btn btn-secondary" onclick="deselectRow()">Deselecteren</button>
+      </div>
+    </div>
+
+    <!-- Overview card -->
+    <div class="card">
+      <div class="card-title">Overzicht naleving</div>
+
+      <div class="toolbar">
+        <label for="filter-zorgaanbieder">Zorgaanbieder:</label>
+        <input type="text" id="filter-zorgaanbieder"
+               placeholder="Zoeken…"
+               style="min-width:160px;"
+               oninput="renderTable()">
+        <label for="filter-actie">Actie:</label>
+        <select id="filter-actie" onchange="renderTable()">
+          <option value="">Alle</option>
+          <option value="Waarschuwingsbrief">Waarschuwingsbrief</option>
+          <option value="Inkoopgesprek">Inkoopgesprek</option>
+          <option value="In gebreke stellen">In gebreke stellen</option>
+        </select>
+        <span class="record-count" id="record-count">Weergegeven: 0 / 0</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-col="peildatum" onclick="toggleSort('peildatum')" style="width:130px;">
+                Peildatum <em class="sort-icon" id="si-peildatum">↕</em>
+              </th>
+              <th class="sortable" data-col="signaalomschrijving" onclick="toggleSort('signaalomschrijving')">
+                Signaalomschrijving <em class="sort-icon" id="si-signaalomschrijving">↕</em>
+              </th>
+              <th class="sortable" data-col="zorgaanbieder" onclick="toggleSort('zorgaanbieder')" style="width:180px;">
+                Zorgaanbieder <em class="sort-icon" id="si-zorgaanbieder">↕</em>
+              </th>
+              <th style="width:220px;">Opvolgingsacties</th>
+              <th style="width:90px;">Acties</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+
+      <div id="empty-state" class="empty-state hidden">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="3" stroke="#6b7a99" stroke-width="1.5"/>
+          <path d="M7 12l3.5 3.5L17 8.5" stroke="#6b7a99" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Geen nalevingsrecords gevonden.
+      </div>
+    </div>
+  </div>
+
+<script>
+'use strict';
+
+const LS_KEY = 'naleving_v1';
+let records     = [];
+let selectedId  = null;
+let sortCol     = null;
+let sortDir     = 1; // 1 = asc, -1 = desc
+
+const ACTIE_BADGE = {
+  'Waarschuwingsbrief': 'waarschuwing',
+  'Inkoopgesprek':      'inkoopgesprek',
+  'In gebreke stellen': 'ingebreke'
+};
+
+/* ---- Utilities ---- */
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const parts = d.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return parts[2] + '-' + parts[1] + '-' + parts[0];
+  }
+  return d;
+}
+
+function normalizeDate(raw) {
+  if (!raw) return null;
+  raw = raw.trim();
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  // DD-MM-YYYY
+  const dm1 = raw.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (dm1) return dm1[3] + '-' + dm1[2] + '-' + dm1[1];
+  // DD/MM/YYYY
+  const dm2 = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (dm2) return dm2[3] + '-' + dm2[2] + '-' + dm2[1];
+  return null;
+}
+
+function showMsg(elId, text, type) {
+  const el = document.getElementById(elId);
+  el.textContent = text;
+  el.className = 'msg-' + type;
+}
+
+function clearMsg(elId) {
+  const el = document.getElementById(elId);
+  el.textContent = '';
+  el.className = 'hidden';
+}
+
+/* ---- Persistence ---- */
+function loadData() {
+  try { records = JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  catch (e) { records = []; }
+}
+
+function saveData() {
+  localStorage.setItem(LS_KEY, JSON.stringify(records));
+}
+
+/* ---- Duplicate check ---- */
+function isDuplicate(peildatum, signaal, zorg, excludeId) {
+  return records.some(r =>
+    r.id !== excludeId &&
+    r.peildatum === peildatum &&
+    r.signaalomschrijving.toLowerCase() === signaal.toLowerCase() &&
+    r.zorgaanbieder.toLowerCase() === zorg.toLowerCase()
+  );
+}
+
+/* ---- Manual add ---- */
+function addManual() {
+  const peildatum = document.getElementById('inp-peildatum').value;
+  const signaal   = document.getElementById('inp-signaal').value.trim();
+  const zorg      = document.getElementById('inp-zorgaanbieder').value.trim();
+
+  clearMsg('msg-manual');
+
+  if (!peildatum) { showMsg('msg-manual', 'Vul een peildatum in.', 'error'); return; }
+  if (!signaal)   { showMsg('msg-manual', 'Vul een signaalomschrijving in.', 'error'); return; }
+  if (!zorg)      { showMsg('msg-manual', 'Vul een zorgaanbieder in.', 'error'); return; }
+
+  if (isDuplicate(peildatum, signaal, zorg, null)) {
+    showMsg('msg-manual', 'Er bestaat al een record met dezelfde peildatum, signaalomschrijving en zorgaanbieder.', 'error');
+    return;
+  }
+
+  records.push({
+    id:                   genId(),
+    peildatum:            peildatum,
+    signaalomschrijving:  signaal,
+    zorgaanbieder:        zorg,
+    acties:               []
+  });
+
+  saveData();
+
+  document.getElementById('inp-peildatum').value       = '';
+  document.getElementById('inp-signaal').value         = '';
+  document.getElementById('inp-zorgaanbieder').value   = '';
+  showMsg('msg-manual', 'Record toegevoegd.', 'success');
+  renderTable();
+}
+
+/* ---- CSV import ---- */
+function importCsv() {
+  clearMsg('msg-csv');
+  const fileInput = document.getElementById('inp-csv-file');
+  const file = fileInput.files[0];
+  if (!file) {
+    showMsg('msg-csv', 'Selecteer een CSV-bestand.', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text  = e.target.result;
+    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+    if (lines.length === 0) {
+      showMsg('msg-csv', 'Het bestand is leeg.', 'error');
+      return;
+    }
+
+    let startIdx = 0;
+    // Detect header: if first field equals "peildatum" (case-insensitive)
+    const firstField = lines[0].split(',')[0].trim().toLowerCase();
+    if (firstField === 'peildatum') startIdx = 1;
+
+    let added   = 0;
+    let skipped = 0;
+
+    for (let i = startIdx; i < lines.length; i++) {
+      const parts = lines[i].split(',');
+      if (parts.length < 3) { skipped++; continue; }
+
+      const rawDate = parts[0].trim();
+      const signaal = parts[1].trim();
+      const zorg    = parts[2].trim();
+
+      const peildatum = normalizeDate(rawDate);
+
+      if (!peildatum || !signaal || !zorg) { skipped++; continue; }
+
+      if (isDuplicate(peildatum, signaal, zorg, null)) { skipped++; continue; }
+
+      records.push({
+        id:                  genId(),
+        peildatum:           peildatum,
+        signaalomschrijving: signaal,
+        zorgaanbieder:       zorg,
+        acties:              []
+      });
+      added++;
+    }
+
+    saveData();
+    fileInput.value = '';
+    showMsg('msg-csv',
+      added + ' regel' + (added !== 1 ? 's' : '') + ' toegevoegd, ' +
+      skipped + ' regel' + (skipped !== 1 ? 's' : '') + ' overgeslagen (duplicaat of ongeldig).',
+      added > 0 ? 'success' : 'info');
+    renderTable();
+  };
+  reader.readAsText(file);
+}
+
+/* ---- Action panel ---- */
+function selectRow(id) {
+  selectedId = id;
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+
+  const panel = document.getElementById('card-action');
+  panel.classList.remove('hidden');
+
+  const title = document.getElementById('action-card-title');
+  title.textContent = 'Actie toevoegen voor: ' + r.signaalomschrijving + ' — ' + r.zorgaanbieder;
+
+  clearMsg('msg-action');
+  renderTable();
+
+  // Scroll action panel into view
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function deselectRow() {
+  selectedId = null;
+  document.getElementById('card-action').classList.add('hidden');
+  clearMsg('msg-action');
+  renderTable();
+}
+
+function addAction() {
+  if (!selectedId) return;
+  clearMsg('msg-action');
+
+  const actie = document.getElementById('inp-actie').value;
+  const r = records.find(r => r.id === selectedId);
+  if (!r) return;
+
+  if (r.acties.includes(actie)) {
+    showMsg('msg-action', 'Deze actie is al gekoppeld aan dit record.', 'error');
+    return;
+  }
+
+  r.acties = r.acties.concat([actie]);
+  saveData();
+  showMsg('msg-action', 'Actie "' + actie + '" toegevoegd.', 'success');
+  renderTable();
+}
+
+/* ---- Delete record ---- */
+function deleteRecord(id) {
+  const r = records.find(r => r.id === id);
+  if (!r) return;
+  if (!confirm('Record "' + r.signaalomschrijving + '" verwijderen?')) return;
+  records = records.filter(r => r.id !== id);
+  if (selectedId === id) {
+    selectedId = null;
+    document.getElementById('card-action').classList.add('hidden');
+    clearMsg('msg-action');
+  }
+  saveData();
+  renderTable();
+}
+
+/* ---- Sort ---- */
+function toggleSort(col) {
+  document.querySelectorAll('thead th[data-col]').forEach(th => {
+    th.classList.remove('sorted');
+    document.getElementById('si-' + th.dataset.col).textContent = '↕';
+  });
+
+  if (sortCol === col) {
+    sortDir = -sortDir;
+  } else {
+    sortCol = col;
+    sortDir = 1;
+  }
+
+  const th = document.querySelector('th[data-col="' + col + '"]');
+  th.classList.add('sorted');
+  document.getElementById('si-' + col).textContent = sortDir === 1 ? '↑' : '↓';
+  renderTable();
+}
+
+/* ---- Filter pipeline ---- */
+function getFiltered() {
+  const fZorg  = document.getElementById('filter-zorgaanbieder').value.trim().toLowerCase();
+  const fActie = document.getElementById('filter-actie').value;
+
+  return records.filter(r => {
+    if (fZorg && !r.zorgaanbieder.toLowerCase().includes(fZorg)) return false;
+    if (fActie && !r.acties.includes(fActie)) return false;
+    return true;
+  });
+}
+
+function getSorted(list) {
+  if (!sortCol) return list;
+  return list.slice().sort((a, b) => {
+    const av = (a[sortCol] || '').toLowerCase();
+    const bv = (b[sortCol] || '').toLowerCase();
+    if (av < bv) return -sortDir;
+    if (av > bv) return  sortDir;
+    return 0;
+  });
+}
+
+/* ---- Render ---- */
+function renderTable() {
+  const filtered = getFiltered();
+  const sorted   = getSorted(filtered);
+  const tbody    = document.getElementById('table-body');
+  const empty    = document.getElementById('empty-state');
+  const count    = document.getElementById('record-count');
+
+  count.textContent = 'Weergegeven: ' + filtered.length + ' / ' + records.length;
+
+  if (sorted.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = sorted.map(r => {
+    const isSelected = r.id === selectedId;
+
+    const badgesHtml = r.acties.length > 0
+      ? '<div class="badges-wrap">' +
+          r.acties.map(a => {
+            const cls = ACTIE_BADGE[a] || 'waarschuwing';
+            return '<span class="badge badge-' + cls + '">' + escHtml(a) + '</span>';
+          }).join('') +
+        '</div>'
+      : '<span style="color:#6b7a99;font-size:0.82rem;">—</span>';
+
+    return '<tr class="' + (isSelected ? 'selected' : '') + '" ' +
+           'onclick="handleRowClick(event, \'' + r.id + '\')" style="cursor:pointer;">' +
+      '<td>' + escHtml(fmtDate(r.peildatum)) + '</td>' +
+      '<td>' + escHtml(r.signaalomschrijving) + '</td>' +
+      '<td>' + escHtml(r.zorgaanbieder) + '</td>' +
+      '<td>' + badgesHtml + '</td>' +
+      '<td class="col-actions">' +
+        '<button class="btn btn-sm btn-danger" ' +
+          'onclick="event.stopPropagation(); deleteRecord(\'' + r.id + '\')">Verwijder</button>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function handleRowClick(event, id) {
+  // Don't trigger if clicking a button
+  if (event.target.tagName === 'BUTTON') return;
+  if (selectedId === id) {
+    deselectRow();
+  } else {
+    selectRow(id);
+  }
+}
+
+/* ---- Init ---- */
+document.getElementById('inp-signaal').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') addManual();
+});
+document.getElementById('inp-zorgaanbieder').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') addManual();
+});
+
+loadData();
+renderTable();
+</script>
+</body>
+</html>
