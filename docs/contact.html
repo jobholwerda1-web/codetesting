@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact – Sewing Time – Naaistudio</title>
+  <meta name="description" content="Neem contact op met Sewing Time. Marloes helpt je graag met vragen over naailessen, aanmelden of de wachtlijst. Birkstraat 114, Soest." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-name">Sewing Time</span>
+        <span class="logo-tagline">Naaistudio</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="naailessen.html">Naailessen</a>
+        <a href="naaidag.html">Naaidag</a>
+        <a href="contact.html" class="btn btn-primary active">Contact</a>
+      </nav>
+      <button class="hamburger" aria-label="Menu openen">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-nav">
+    <a href="index.html">Home</a>
+    <a href="naailessen.html">Naailessen</a>
+    <a href="naaidag.html">Naaidag</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb">
+    <div class="container">
+      <a href="index.html">Home</a>
+      <span>›</span>
+      <span>Contact</span>
+    </div>
+  </div>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="container">
+      <span class="section-label">Neem contact op</span>
+      <h1>Contact</h1>
+      <p>Heb je een vraag of wil je je aanmelden voor een les of naaidag? Marloes hoort graag van je!</p>
+    </div>
+  </div>
+
+  <!-- CONTACT SECTIE -->
+  <section>
+    <div class="container">
+      <div class="contact-grid">
+
+        <!-- Contactinfo links -->
+        <div class="contact-info">
+          <span class="section-label">Bereikbaarheid</span>
+          <h2>Hoe kun je ons bereiken?</h2>
+          <p>Je kunt Marloes bereiken via het contactformulier, per e-mail of telefoon. Ze reageert zo snel mogelijk op je bericht.</p>
+
+          <div class="contact-detail">
+            <div class="contact-detail-icon">📍</div>
+            <div class="contact-detail-text">
+              <h4>Adres</h4>
+              <p>Birkstraat 114<br />3768 HL Soest<br /><small style="color:var(--text-light);">Aan de rand van de Soesterduinen</small></p>
+            </div>
+          </div>
+
+          <div class="contact-detail">
+            <div class="contact-detail-icon">📞</div>
+            <div class="contact-detail-text">
+              <h4>Telefoon</h4>
+              <p><a href="tel:0614758384">06-14758384</a></p>
+            </div>
+          </div>
+
+          <div class="contact-detail">
+            <div class="contact-detail-icon">✉️</div>
+            <div class="contact-detail-text">
+              <h4>E-mail</h4>
+              <p><a href="mailto:marloes@sewingtime.nl">marloes@sewingtime.nl</a></p>
+            </div>
+          </div>
+
+          <div class="contact-detail">
+            <div class="contact-detail-icon">📸</div>
+            <div class="contact-detail-text">
+              <h4>Instagram</h4>
+              <p><a href="https://www.instagram.com/naaistudio_sewingtime/" target="_blank" rel="noopener">@naaistudio_sewingtime</a></p>
+            </div>
+          </div>
+
+          <!-- Kaart placeholder -->
+          <div class="map-placeholder">
+            <span>🗺️</span>
+            <p>Birkstraat 114, 3768 HL Soest</p>
+            <small style="color:var(--text-light);">Vervang dit blok door een Google Maps embed</small>
+          </div>
+        </div>
+
+        <!-- Contactformulier rechts -->
+        <div>
+          <div class="contact-form-card">
+            <h3>Stuur een bericht</h3>
+
+            <!--
+              FORMSPREE INSTRUCTIES:
+              1. Ga naar https://formspree.io en maak een gratis account aan
+              2. Maak een nieuw formulier aan
+              3. Vervang YOUR_FORMSPREE_ID hieronder door jouw formulier-ID
+              Voorbeeld: action="https://formspree.io/f/abcdefgh"
+            -->
+            <form id="contact-form" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST" novalidate>
+
+              <!-- Verborgen veld: spam bescherming -->
+              <input type="hidden" name="_subject" value="Nieuw bericht via sewingtime.nl" />
+
+              <div class="form-group">
+                <label for="naam">Naam *</label>
+                <input type="text" id="naam" name="naam" placeholder="Jouw naam" required />
+              </div>
+
+              <div class="form-group">
+                <label for="email">E-mailadres *</label>
+                <input type="email" id="email" name="email" placeholder="jouw@email.nl" required />
+              </div>
+
+              <div class="form-group">
+                <label for="telefoon">Telefoonnummer</label>
+                <input type="tel" id="telefoon" name="telefoon" placeholder="06-12345678" />
+              </div>
+
+              <div class="form-group">
+                <label for="onderwerp">Onderwerp *</label>
+                <select id="onderwerp" name="onderwerp" required>
+                  <option value="" disabled selected>Kies een onderwerp</option>
+                  <option value="naailessen-volwassenen">Naailessen volwassenen</option>
+                  <option value="naailessen-volwassenen-wachtlijst">Wachtlijst naailessen volwassenen</option>
+                  <option value="kindernaailessen">Kindernaailessen</option>
+                  <option value="naaidag">Naaidag</option>
+                  <option value="overig">Overige vraag</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="bericht">Bericht *</label>
+                <textarea id="bericht" name="bericht" placeholder="Schrijf hier je bericht..." required></textarea>
+              </div>
+
+              <div class="form-submit">
+                <button type="submit" class="btn btn-primary">Verstuur bericht</button>
+              </div>
+
+              <div id="form-success" class="form-success">
+                ✓ &nbsp;Bedankt voor je bericht! Marloes neemt zo snel mogelijk contact met je op.
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="logo-name">Sewing Time</span>
+            <span class="logo-tagline">Naaistudio</span>
+          </div>
+          <p>Een gezellige naaistudio aan de rand van de Soesterduinen, waar je in een kleine groep werkt aan je eigen naaiproject.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Navigatie</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="naailessen.html">Naailessen</a></li>
+            <li><a href="naailessen-volwassenen.html">Volwassenen</a></li>
+            <li><a href="kindernaailessen.html">Kinderen</a></li>
+            <li><a href="naaidag.html">Naaidag</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <address>
+            Birkstraat 114<br />
+            3768 HL Soest<br /><br />
+            <a href="tel:0614758384">06-14758384</a><br />
+            <a href="mailto:marloes@sewingtime.nl">marloes@sewingtime.nl</a>
+          </address>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2024 Sewing Time – Naaistudio</span>
+        <span>Soest / Amersfoort</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
