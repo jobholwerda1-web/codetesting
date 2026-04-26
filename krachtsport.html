@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>Krachtsport — Personal OS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Syne+Mono&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#0a0a0a;--s1:#111113;--s2:#18181c;--s3:#222228;
+  --border:#2a2a32;--text:#f0f0f0;--muted:#888896;
+  --accent:#c8f07a;--accent-dim:rgba(200,240,122,.12);
+  --blue:#7ad4f0;--r:16px;--rm:12px;
+}
+
+html{width:100%;height:100%}
+
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Syne',sans-serif;
+  width:100%;min-height:100vh;
+  overscroll-behavior:none;
+  overflow-x:hidden;
+  margin:0;padding:0;
+}
+
+/* Force full width — override any Google iframe constraints */
+body > *{width:100% !important;max-width:100% !important}
+
+.wrap{
+  width:100%;
+  padding:16px 16px 48px;
+}
+
+.top-bar{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:16px 0 20px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+.logo{font-size:14px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+.logo strong{color:var(--accent);font-weight:800}
+.date-chip{
+  font-family:'Syne Mono',monospace;font-size:14px;color:var(--muted);
+  background:var(--s2);border:1px solid var(--border);
+  padding:7px 14px;border-radius:20px;
+}
+
+.label{
+  font-size:13px;letter-spacing:.10em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;margin-top:24px;
+  display:block;
+}
+
+/* WORKOUT KNOPPEN */
+.wo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wo-btn{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--rm);padding:22px 4px;
+  text-align:center;cursor:pointer;user-select:none;
+}
+.wo-num{font-size:36px;font-weight:800;color:var(--muted);line-height:1}
+.wo-lbl{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.4}
+.wo-btn.active{background:var(--accent-dim);border-color:var(--accent)}
+.wo-btn.active .wo-num,.wo-btn.active .wo-lbl{color:var(--accent)}
+
+/* ACTION BAR */
+.action-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px;margin-top:16px;
+}
+.totaal-wrap{flex:1}
+.totaal-lbl{font-size:13px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.totaal-val{font-family:'Syne Mono',monospace;font-size:24px;font-weight:700;color:var(--accent)}
+.save-btn{
+  padding:16px 22px;background:var(--accent);color:#0a0a0a;
+  border:none;border-radius:var(--rm);
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+.save-btn:disabled{background:var(--s3);color:var(--muted)}
+
+/* OEFENINGEN */
+.ex-list{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.ex-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ex-card.has-data{border-color:rgba(200,240,122,.35)}
+.ex-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 16px;cursor:pointer;user-select:none;
+}
+.ex-name{font-size:18px;font-weight:700;color:var(--text)}
+.ex-schema{font-family:'Syne Mono',monospace;font-size:14px;color:var(--muted);margin-top:4px}
+.ex-tog{
+  width:36px;height:36px;background:var(--s3);border:1px solid var(--border);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:var(--muted);flex-shrink:0;
+}
+.ex-card.open .ex-tog{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.ex-body{display:none;padding:0 14px 14px}
+.ex-card.open .ex-body{display:block}
+
+/* SETS TABEL */
+.sets-tbl{width:100%;border-collapse:collapse;margin-bottom:10px}
+.sets-tbl th{
+  font-family:'Syne Mono',monospace;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);text-align:center;
+  padding:0 3px 12px;
+}
+.sets-tbl th:first-child{text-align:left;width:24px}
+.sets-tbl td{padding:8px 3px;text-align:center;vertical-align:middle}
+.sets-tbl td:first-child{font-family:'Syne Mono',monospace;font-size:16px;color:var(--muted);text-align:left}
+
+.n-input{
+  background:var(--s3);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'Syne Mono',monospace;
+  font-size:22px;font-weight:700;
+  padding:16px 2px;width:100%;text-align:center;outline:none;
+  -webkit-appearance:none;
+}
+.n-input:focus{border-color:var(--accent)}
+.n-input::placeholder{color:var(--border)}
+.vol-c{font-family:'Syne Mono',monospace;font-size:16px;color:var(--blue);min-width:50px}
+
+.add-set{
+  width:100%;padding:16px;background:transparent;
+  border:1px dashed var(--border);border-radius:8px;
+  color:var(--muted);font-family:'Syne',sans-serif;font-size:16px;cursor:pointer;
+}
+
+/* GEVOEL */
+.gevoel-wrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.g-pill{
+  padding:13px 20px;border:1px solid var(--border);border-radius:20px;
+  font-size:15px;color:var(--muted);cursor:pointer;user-select:none;
+  font-family:'Syne Mono',monospace;
+}
+.g-pill.on{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* NOTITIE */
+.notitie{
+  width:100%;background:var(--s2);border:1px solid var(--border);
+  border-radius:var(--rm);color:var(--text);font-family:'Syne',sans-serif;
+  font-size:17px;padding:16px;outline:none;resize:none;margin-top:4px;
+}
+.notitie:focus{border-color:var(--accent)}
+.notitie::placeholder{color:var(--muted)}
+
+/* SUCCESS */
+.success{
+  display:none;position:fixed;inset:0;background:var(--bg);z-index:100;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;text-align:center;padding:32px;
+}
+.success.show{display:flex}
+.s-icon{font-size:64px}
+.s-title{font-size:24px;font-weight:800;color:var(--accent)}
+.s-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:280px}
+.s-again{
+  margin-top:8px;padding:12px 28px;background:var(--s2);
+  border:1px solid var(--border);border-radius:var(--rm);
+  font-family:'Syne',sans-serif;font-size:13px;color:var(--text);cursor:pointer;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
+  background:var(--s3);border:1px solid var(--border);border-radius:20px;
+  padding:10px 20px;font-size:12px;opacity:0;transition:opacity .3s;
+  pointer-events:none;z-index:200;white-space:nowrap;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-bar">
+    <div class="logo">Personal <strong>OS</strong> — Kracht</div>
+    <div class="date-chip" id="dateChip"></div>
+  </div>
+
+  <span class="label">Workout</span>
+  <div class="wo-grid">
+    <div class="wo-btn active" onclick="selWo(1,this)">
+      <div class="wo-num">1</div>
+      <div class="wo-lbl">Borst·Benen·Rug</div>
+    </div>
+    <div class="wo-btn" onclick="selWo(2,this)">
+      <div class="wo-num">2</div>
+      <div class="wo-lbl">Rug·HM·Schouder</div>
+    </div>
+    <div class="wo-btn" onclick="selWo(3,this)">
+      <div class="wo-num">3</div>
+      <div class="wo-lbl">Schouder·Billen</div>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="totaal-wrap">
+      <div class="totaal-lbl">Totaal volume</div>
+      <div class="totaal-val" id="totaalVol">0 kg</div>
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="submitWorkout()">Opslaan →</button>
+  </div>
+
+  <span class="label" style="margin-top:24px">Oefeningen</span>
+  <div class="ex-list" id="exList"></div>
+
+  <span class="label" style="margin-top:24px">Sessiegevoel</span>
+  <div class="gevoel-wrap" id="gevoelWrap">
+    <div class="g-pill on" onclick="selGevoel(this)">Goed</div>
+    <div class="g-pill" onclick="selGevoel(this)">Zwaar</div>
+    <div class="g-pill" onclick="selGevoel(this)">Moe</div>
+    <div class="g-pill" onclick="selGevoel(this)">Sterk</div>
+    <div class="g-pill" onclick="selGevoel(this)">Pijnlijk</div>
+  </div>
+
+  <span class="label" style="margin-top:24px">Notitie</span>
+  <textarea class="notitie" id="notitie" rows="2" placeholder="Bijv: squat PR, schouder gevoelig..."></textarea>
+
+</div>
+
+<div class="success" id="success">
+  <div class="s-icon">💪</div>
+  <div class="s-title">Opgeslagen!</div>
+  <div class="s-sub" id="sSub"></div>
+  <button class="s-again" onclick="resetApp()">Nieuwe sessie</button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxQIQIDQsPZ3qwczBE6GIgrVCXysK9JIJAVAhTiuwGoZFSZnpIo92_9VW6sW01CfR7a9Q/exec';
+
+const WO = {
+  1:[{n:'Incline DB Press',s:'3×8–12'},{n:'Barbell Back Squat',s:'3×6–8'},{n:'DB Chest-Supported Row',s:'3×8–12'},{n:'Leg Curl',s:'3×10–15'},{n:'Incline DB Curl',s:'3×10–15'},{n:'DB Overhead Extension',s:'3×10–15'}],
+  2:[{n:'Barbell Bench Press',s:'3×4–6'},{n:'Romanian Deadlift',s:'3×6–8'},{n:'Lat Pulldown',s:'3×8–12'},{n:'Walking Lunges',s:'3×6–10'},{n:'Lateral Raise',s:'3×10–15'},{n:'Knee Raises',s:'3×10–15'}],
+  3:[{n:'Seated DB Shoulder Press',s:'3×8–12'},{n:'DB Row eenarmig',s:'3×8–12'},{n:'Hip Thrust',s:'3×10–15'},{n:'Leg Extension',s:'3×10–15'},{n:'DB Chest Fly',s:'3×10–15'},{n:'Calf Raise',s:'3×15–20'},{n:'Reverse DB Fly',s:'3×10–15'}]
+};
+
+let cWo=1, gevoel='Goed';
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const d=new Date();
+  const days=['zo','ma','di','wo','do','vr','za'];
+  const months=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  document.getElementById('dateChip').textContent=days[d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()];
+  render(1);
+});
+
+function selWo(n,el){
+  document.querySelectorAll('.wo-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');cWo=n;render(n);
+}
+
+function render(n){
+  const list=document.getElementById('exList');
+  list.innerHTML='';
+  WO[n].forEach((ex,i)=>{
+    const c=document.createElement('div');
+    c.className='ex-card';c.id='ex-'+i;
+    c.innerHTML=`
+      <div class="ex-head" onclick="tog(${i})">
+        <div>
+          <div class="ex-name">${ex.n}</div>
+          <div class="ex-schema" id="meta-${i}">${ex.s}</div>
+        </div>
+        <div class="ex-tog" id="tog-${i}">+</div>
+      </div>
+      <div class="ex-body">
+        <table class="sets-tbl">
+          <thead><tr><th>#</th><th>Reps</th><th>Kg</th><th>Vol</th></tr></thead>
+          <tbody id="sets-${i}">
+            ${row(i,0)}${row(i,1)}${row(i,2)}
+          </tbody>
+        </table>
+        <button class="add-set" onclick="addSet(${i})">+ Set toevoegen</button>
+      </div>`;
+    list.appendChild(c);
+  });
+  updTotaal();
+}
+
+function row(e,s){
+  return`<tr><td>${s+1}</td>
+    <td><input class="n-input" type="number" id="r-${e}-${s}" placeholder="—" min="1" max="50" oninput="updVol(${e},${s})"></td>
+    <td><input class="n-input" type="number" id="k-${e}-${s}" placeholder="—" min="0" max="500" step="0.5" oninput="updVol(${e},${s})"></td>
+    <td class="vol-c" id="v-${e}-${s}">—</td></tr>`;
+}
+
+function tog(i){
+  const c=document.getElementById('ex-'+i);
+  const t=document.getElementById('tog-'+i);
+  c.classList.toggle('open');
+  t.textContent=c.classList.contains('open')?'−':'+';
+}
+
+function addSet(e){
+  const tb=document.getElementById('sets-'+e);
+  tb.insertAdjacentHTML('beforeend',row(e,tb.rows.length));
+}
+
+function updVol(e,s){
+  const r=parseFloat(document.getElementById(`r-${e}-${s}`)?.value)||0;
+  const k=parseFloat(document.getElementById(`k-${e}-${s}`)?.value)||0;
+  const v=r&&k?(r*k).toFixed(0)+'kg':'—';
+  const cell=document.getElementById(`v-${e}-${s}`);
+  if(cell)cell.textContent=v;
+  document.getElementById('ex-'+e)?.classList.toggle('has-data',[...document.querySelectorAll(`[id^="k-${e}-"]`)].some(el=>el.value));
+  // meta update
+  const tb=document.getElementById('sets-'+e);
+  let tot=0;
+  for(let i=0;i<tb?.rows.length;i++){
+    const ri=parseFloat(document.getElementById(`r-${e}-${i}`)?.value)||0;
+    const ki=parseFloat(document.getElementById(`k-${e}-${i}`)?.value)||0;
+    tot+=ri*ki;
+  }
+  const m=document.getElementById('meta-'+e);
+  if(m&&tot>0)m.innerHTML=`${tb.rows.length} sets · <span style="color:var(--blue)">${tot.toFixed(0)}kg</span>`;
+  updTotaal();
+}
+
+function updTotaal(){
+  let t=0;
+  document.querySelectorAll('[id^="v-"]').forEach(c=>{const v=parseFloat(c.textContent);if(!isNaN(v))t+=v;});
+  document.getElementById('totaalVol').textContent=t>0?t.toFixed(0)+' kg':'0 kg';
+}
+
+function selGevoel(el){
+  document.querySelectorAll('.g-pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');gevoel=el.textContent;
+}
+
+async function submitWorkout(){
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.textContent='Bezig...';
+  const sets=[];
+  WO[cWo].forEach((ex,e)=>{
+    const tb=document.getElementById('sets-'+e);
+    if(!tb)return;
+    for(let s=0;s<tb.rows.length;s++){
+      const r=parseFloat(document.getElementById(`r-${e}-${s}`)?.value);
+      const k=parseFloat(document.getElementById(`k-${e}-${s}`)?.value);
+      if(r&&k)sets.push({oefening:ex.n,sets:1,reps:r,gewicht:k});
+    }
+  });
+  if(!sets.length){showToast('Vul eerst data in');btn.disabled=false;btn.textContent='Opslaan →';return;}
+  const payload={
+    date:new Date().toISOString().split('T')[0],
+    workout:String(cWo),
+    notitie:document.getElementById('notitie').value||gevoel,
+    sets
+  };
+  try{
+    await fetch(API,{method:'POST',body:JSON.stringify(payload)});
+    const tot=sets.reduce((a,s)=>a+s.reps*s.gewicht,0);
+    const nEx=[...new Set(sets.map(s=>s.oefening))].length;
+    document.getElementById('sSub').textContent=`Workout ${cWo} · ${nEx} oefeningen · ${sets.length} sets · ${tot.toFixed(0)}kg volume`;
+    document.getElementById('success').classList.add('show');
+  }catch(e){
+    showToast('Fout bij opslaan');btn.disabled=false;btn.textContent='Opslaan →';
+  }
+}
+
+function resetApp(){
+  document.getElementById('success').classList.remove('show');
+  document.getElementById('saveBtn').disabled=false;
+  document.getElementById('saveBtn').textContent='Opslaan →';
+  document.getElementById('notitie').value='';
+  render(cWo);
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
