@@ -358,13 +358,28 @@ async function submitWorkout(){
     sets
   };
   try{
-    await fetch(API,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});
-    const tot=sets.reduce((a,s)=>a+s.reps*s.gewicht,0);
-    const nEx=[...new Set(sets.map(s=>s.oefening))].length;
-    document.getElementById('sSub').textContent=`Workout ${cWo} · ${nEx} oefeningen · ${sets.length} sets · ${tot.toFixed(0)}kg volume`;
-    document.getElementById('success').classList.add('show');
+    // Stuur via GET om CORS te omzeilen
+    const params = new URLSearchParams({
+      action: 'kracht',
+      date: payload.date,
+      workout: payload.workout,
+      notitie: payload.notitie || '',
+      sets: encodeURIComponent(JSON.stringify(payload.sets))
+    });
+    const res = await fetch(API + '?' + params.toString(), {method:'GET'});
+    const json = await res.json();
+    
+    if(json.status === 'ok'){
+      const tot=sets.reduce((a,s)=>a+s.reps*s.gewicht,0);
+      const nEx=[...new Set(sets.map(s=>s.oefening))].length;
+      document.getElementById('sSub').textContent=`Workout ${cWo} · ${nEx} oefeningen · ${sets.length} sets · ${tot.toFixed(0)}kg volume`;
+      document.getElementById('success').classList.add('show');
+    } else {
+      showToast('Fout: ' + json.message);
+      btn.disabled=false;btn.textContent='Opslaan →';
+    }
   }catch(e){
-    showToast('Fout bij opslaan');btn.disabled=false;btn.textContent='Opslaan →';
+    showToast('Fout bij opslaan: ' + e.message);btn.disabled=false;btn.textContent='Opslaan →';
   }
 }
 
