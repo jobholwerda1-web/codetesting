@@ -358,7 +358,7 @@ async function submitWorkout(){
     sets
   };
   try{
-    await fetch(API,{method:'POST',body:JSON.stringify(payload)});
+    await fetch(API,{method:'POST',body:JSON.stringify(payload),mode:'no-cors'});
     const tot=sets.reduce((a,s)=>a+s.reps*s.gewicht,0);
     const nEx=[...new Set(sets.map(s=>s.oefening))].length;
     document.getElementById('sSub').textContent=`Workout ${cWo} · ${nEx} oefeningen · ${sets.length} sets · ${tot.toFixed(0)}kg volume`;
