@@ -5,15 +5,17 @@ Option Explicit
 ' LCB MAPPENSTRUCTUUR SCRIPT
 ' Structuur: Zorgsoort > LCB > Versie
 ' - Alleen nieuwe rijen worden verwerkt (Status <> "Ja")
-' - Hyperlink naar aangemaakte map wordt in Excel gezet
+' - Hyperlink naar aangemaakte map wordt in Excel gezet (SharePoint URL)
 ' - Optionele dossierkoppeling wordt als Dossier.url in de map geplaatst
 '
 ' EXCEL SHEET INDELING:
-' Rij 1:  A="Basismap"      B=[SharePoint URL of lokaal pad]
-' Rij 2:  A="RelatiefPad"   B=[pad relatief aan OneDriveCommercial, bijv. asrnl - LCBProjectomgeving\General]
+' Rij 1:  A="Basismap"        B=[SharePoint URL van de basismap, bijv. https://asrnl.sharepoint.com/sites/.../General]
+' Rij 2:  A="RelatiefPad"     B=[lokaal pad relatief aan OneDriveCommercial, bijv. General - LCB Projectomgeving]
 ' Rij 3:  (leeg)
 ' Rij 4:  KOPPEN: A=Zorgsoort | B=LCB | C=Versie | D=Dossierkoppeling | E=Aangemaakt | F=Maplink
 ' Rij 5+: Data
+'
+' Maplink wordt opgeslagen als SharePoint hyperlink-formaat: "URL, Weergavetekst"
 ' ============================================================
 
 Public Sub MaakLCBMappen()
@@ -26,12 +28,20 @@ Public Sub MaakLCBMappen()
     ' ------------------------
     ' Config ophalen
     ' ------------------------
-    Dim baseInput As String, relPad As String
+    Dim baseInput As String, relPad As String, spBase As String
     baseInput = GetValueRightOfLabel(ws, "Basismap", 1)
     relPad    = GetValueRightOfLabel(ws, "RelatiefPad", 1)
 
     If baseInput = "" Then Err.Raise 1, , "Basismap ontbreekt in cel B1"
     If relPad = ""    Then Err.Raise 2, , "RelatiefPad ontbreekt in cel B2"
+
+    ' SharePoint basismap: gebruik de waarde uit Basismap als die begint met http,
+    ' anders geen SharePoint URL beschikbaar
+    If LCase(Left(baseInput, 4)) = "http" Then
+        spBase = baseInput
+        ' trailing slash verwijderen voor consistente opbouw
+        If Right(spBase, 1) = "/" Then spBase = Left(spBase, Len(spBase) - 1)
+    End If
 
     Dim baseRoot As String
     baseRoot = ResolveBasePath(baseInput, relPad)
@@ -100,13 +110,20 @@ Public Sub MaakLCBMappen()
                     CreateUrlShortcut CombinePath(pad3, "Dossier.url"), dossierLink
                 End If
 
-                ' Hyperlink naar versiemap terugschrijven in Excel
-                On Error Resume Next
-                ws.Hyperlinks.Add _
-                    Anchor:=ws.Cells(r, COL_MAPLINK), _
-                    Address:=pad3, _
-                    TextToDisplay:=zorgsoort & " \ " & lcbNaam & " \ " & versie
-                On Error GoTo EH
+                ' Maplink opslaan als SharePoint hyperlink-formaat: "URL, Weergavetekst"
+                Dim weergave As String
+                weergave = zorgsoort & " \ " & lcbNaam & " \ " & versie
+
+                If spBase <> "" Then
+                    ' SharePoint URL opbouwen (spaties als %20)
+                    Dim spUrl As String
+                    spUrl = spBase & "/" & UrlEncodePart(zorgsoort) & "/" & _
+                            UrlEncodePart(lcbNaam) & "/" & UrlEncodePart(versie)
+                    ws.Cells(r, COL_MAPLINK).Value = spUrl & ", " & weergave
+                Else
+                    ' Geen SharePoint URL beschikbaar: lokaal pad opslaan
+                    ws.Cells(r, COL_MAPLINK).Value = pad3 & ", " & weergave
+                End If
 
                 ws.Cells(r, COL_STATUS).Value = "Ja"
                 aangemaakt = aangemaakt + 1
@@ -208,6 +225,18 @@ Private Function GetValueRightOfLabel(ws As Worksheet, label As String, col As L
     r = FindLabelRow(ws, label, col)
     If r = 0 Then Exit Function
     GetValueRightOfLabel = Trim(CStr(ws.Cells(r, col + 1).Value))
+End Function
+
+
+' ============================================================
+' URL ENCODING (spaties en bijzondere tekens voor SharePoint URL)
+' ============================================================
+Private Function UrlEncodePart(ByVal s As String) As String
+    s = Replace(s, " ", "%20")
+    s = Replace(s, "&", "%26")
+    s = Replace(s, "#", "%23")
+    s = Replace(s, "+", "%2B")
+    UrlEncodePart = s
 End Function
 
 
