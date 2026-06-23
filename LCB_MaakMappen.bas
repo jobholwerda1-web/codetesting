@@ -115,10 +115,9 @@ Public Sub MaakLCBMappen()
                 weergave = zorgsoort & " \ " & lcbNaam & " \ " & versie
 
                 If spBase <> "" Then
-                    ' SharePoint URL opbouwen (spaties als %20)
+                    ' SharePoint URL tot op LCB-niveau (niet dieper dan LCB-map)
                     Dim spUrl As String
-                    spUrl = spBase & "/" & UrlEncodePart(zorgsoort) & "/" & _
-                            UrlEncodePart(lcbNaam) & "/" & UrlEncodePart(versie)
+                    spUrl = spBase & "/" & UrlEncodePart(zorgsoort) & "/" & UrlEncodePart(lcbNaam)
                     ws.Cells(r, COL_MAPLINK).Value = spUrl & ", " & weergave
                 Else
                     ' Geen SharePoint URL beschikbaar: lokaal pad opslaan
