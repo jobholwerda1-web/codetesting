@@ -112,7 +112,7 @@ Public Sub MaakLCBMappen()
 
                 ' Maplink opslaan als SharePoint hyperlink-formaat: "URL, Weergavetekst"
                 Dim weergave As String
-                weergave = zorgsoort & " \ " & lcbNaam
+                weergave = zorgsoort & " / " & lcbNaam
 
                 If spBase <> "" Then
                     ' SharePoint URL tot op LCB-niveau (niet dieper dan LCB-map)
