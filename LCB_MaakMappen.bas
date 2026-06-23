@@ -111,17 +111,14 @@ Public Sub MaakLCBMappen()
                 End If
 
                 ' Maplink opslaan als SharePoint hyperlink-formaat: "URL, Weergavetekst"
-                Dim weergave As String
-                weergave = zorgsoort & " / " & lcbNaam
-
                 If spBase <> "" Then
-                    ' SharePoint URL tot op LCB-niveau (niet dieper dan LCB-map)
+                    ' SharePoint URL tot op LCB-niveau — alleen de URL, geen weergavetekst
                     Dim spUrl As String
                     spUrl = spBase & "/" & UrlEncodePart(zorgsoort) & "/" & UrlEncodePart(lcbNaam)
-                    ws.Cells(r, COL_MAPLINK).Value = spUrl & ", " & weergave
+                    ws.Cells(r, COL_MAPLINK).Value = spUrl
                 Else
                     ' Geen SharePoint URL beschikbaar: lokaal pad opslaan
-                    ws.Cells(r, COL_MAPLINK).Value = pad3 & ", " & weergave
+                    ws.Cells(r, COL_MAPLINK).Value = pad3
                 End If
 
                 ws.Cells(r, COL_STATUS).Value = "Ja"
